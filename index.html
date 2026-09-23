@@ -141,6 +141,7 @@ body.portrait .overlay-card{inset:1.1em}
 @keyframes rise{to{opacity:1;transform:none}}
 .pop{opacity:0;transform:scale(.6);animation:pop 460ms var(--e-pop) forwards;animation-delay:var(--d,0ms)}
 @keyframes pop{to{opacity:1;transform:none}}
+@keyframes pop-ransom{0%{opacity:0;scale:0.4}100%{opacity:1;scale:1}}
 .fade{opacity:0;animation:fade 420ms ease-out forwards;animation-delay:var(--d,0ms)}
 @keyframes fade{to{opacity:1}}
 
@@ -239,9 +240,8 @@ body.portrait .frame-wrap{width:min(62%,17em)}
    SCENE — happy birthday (ransom letters + camera)
    ============================================================ */
 #sc-bday{justify-content:center;gap:.5em}
-.ransom{display:flex;justify-content:center;align-items:flex-end;gap:.12em;flex-wrap:nowrap}
-.ransom b{display:inline-block;font-weight:900;line-height:.98;padding:.06em .16em .1em;
-  border-radius:3px;box-shadow:0 3px 7px rgba(120,100,60,.22)}
+.ransom{display:flex;justify-content:center;align-items:flex-start;gap:.05em;flex-wrap:nowrap}
+.ransom b{display:inline-block;font-weight:900;line-height:.98}
 .ransom.l1 b{font-size:3.1em}
 .ransom.l2 b{font-size:2.55em}
 body.portrait .ransom.l1 b{font-size:2.5em}
@@ -408,6 +408,18 @@ body.portrait .hug-wrap{width:min(66%,18em)}
 .hug-caption{font-size:2.4em}
 body.portrait .hug-caption{font-size:1.9em}
 
+.confetti { position:absolute; width:8px; height:16px; border-radius:2px; animation: confetti-fall infinite ease-in; opacity:0; z-index:0; pointer-events:none; }
+@keyframes confetti-fall {
+  0% { opacity: 1; transform: translateY(-50px) rotate(0deg); }
+  100% { opacity: 1; transform: translateY(120vh) rotate(720deg); }
+}
+.balloon { position:absolute; width:45px; height:55px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2); animation: float-up infinite ease-in; z-index:1; pointer-events:none; }
+.balloon::after { content:""; position:absolute; left:50%; top:100%; width:2px; height:50px; background:rgba(0,0,0,0.2); transform:translateX(-50%); }
+@keyframes float-up {
+  0% { transform: translateY(100vh) scale(0.8); opacity: 1; }
+  100% { transform: translateY(-100vh) scale(1); opacity: 1; }
+}
+
 /* ---- prefers-reduced-motion ---- */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
@@ -475,7 +487,7 @@ const CONFIG = {
     caption: "so many more to come",
     // { src: "https://…" | null, cap: "caption" } — shows as a tilted polaroid, cap on the bottom strip
     photos: [
-      {src:null, cap:"the café, 2019"},
+      {src:null, cap:"the cafe, 2019", backSrc:"gifs/polaroid-back.jpg", backCap:"you glowing "},
       {src:"gifs/happy-dog.gif", cap:"heart hands"},
       {src:null, cap:"golden hour"},
       {src:null, cap:"that night out"},
@@ -973,18 +985,29 @@ SCENES.goodboy = () => {
 };
 
 /* ---------- 5. happy birthday banner ---------- */
-const RANSOM_PAPERS = ['#F6C9D6','#CFC3F2','#FBEFA6','#FFFFFF','#BFE4DA','#F7D4A8','#E4D9F7','#FBD9E4'];
-const RANSOM_INKS   = ['#8A78D4','#2FA58C','#C2352F','#E8A33D','#5B5566','#3B7FB8','#B24A7E'];
-const RANSOM_FONTS  = ["'Archivo Black',sans-serif","'Playfair Display',serif","'Courier Prime',monospace","'Grandstander',cursive","'Poppins',sans-serif"];
+const RANSOM_STYLES = [
+  'color:#fff; -webkit-text-stroke:2px #E8A33D; text-shadow:2px 2px 0px rgba(232,163,61,0.4);',
+  'color:#8A78D4;',
+  'color:#fff; -webkit-text-stroke:2px #C2352F; text-shadow:2px 2px 0px rgba(194,53,47,0.4);',
+  'color:transparent; -webkit-text-stroke:2px #7A7488;',
+  'color:#E8A33D;',
+  'color:transparent; -webkit-text-stroke:2px #3B7FB8;',
+  'color:#C2352F;',
+  'color:transparent; -webkit-text-stroke:2px #2FA58C;',
+  'color:#fff; -webkit-text-stroke:2px #8A78D4; text-shadow:2px 2px 0px rgba(138,120,212,0.4);'
+];
+const RANSOM_FONTS = ["'Archivo Black',sans-serif","'Playfair Display',serif","'Courier Prime',monospace","'Grandstander',cursive","'Poppins',sans-serif","'Patrick Hand',cursive"];
 function ransom(word, cls){
   const wrap = el('div','ransom '+cls);
   const r = rng(word.length*977+word.charCodeAt(0));
   Array.from(word).forEach((ch,i)=>{
     const b = el('b', null, ch===' '? '&nbsp;' : esc(ch));
-    const rot = (r()*10-5).toFixed(1);
-    b.style.cssText = `background:${RANSOM_PAPERS[(r()*RANSOM_PAPERS.length)|0]};color:${RANSOM_INKS[(r()*RANSOM_INKS.length)|0]};`+
-      `font-family:${RANSOM_FONTS[(r()*RANSOM_FONTS.length)|0]};transform:rotate(${rot}deg);`+
-      `opacity:0;animation:pop 420ms var(--e-pop) forwards;animation-delay:${140+i*70}ms`;
+    const rot = (r()*20-10).toFixed(1);
+    const dy = (r()*10-5).toFixed(1);
+    b.style.cssText = RANSOM_STYLES[(r()*RANSOM_STYLES.length)|0] +
+      'font-family:' + RANSOM_FONTS[(r()*RANSOM_FONTS.length)|0] + ';transform:translateY('+dy+'px) rotate('+rot+'deg);' +
+      'margin:0 -0.02em;' +
+      'opacity:0;scale:0.4;animation:pop-ransom 420ms var(--e-pop) forwards;animation-delay:'+(140+i*70)+'ms;';
     b.style.setProperty('--tw-rot',rot);
     wrap.appendChild(b);
   });
@@ -1005,6 +1028,33 @@ SCENES.bday = () => {
   [...l2.children].forEach((b,i)=>{ b.style.animationDelay = (900+i*70)+'ms'; });
   const dog = el('div','party-dog rise', ART.puppy({hat:'party'}));
   dog.style.setProperty('--d','1500ms');
+  const colors = ['#8A78D4','#2FA58C','#C2352F','#E8A33D','#3B7FB8','#B24A7E'];
+  for(let i=0; i<60; i++){
+    let c = el('div','confetti');
+    let color = colors[Math.floor(Math.random()*colors.length)];
+    let left = Math.random()*100;
+    let animDelay = Math.random()*2;
+    let animDur = Math.random()*2 + 3;
+    c.style.cssText = `background:${color}; left:${left}%; animation-delay:${animDelay}s; animation-duration:${animDur}s;`;
+    s.append(c);
+  }
+  for(let i=0; i<6; i++){
+    let b = el('div', 'balloon');
+    let color = colors[Math.floor(Math.random()*colors.length)];
+    let left = 5 + (i * (90/6)) + (Math.random()*10-5);
+    let animDelay = Math.random() + 0.5;
+    b.style.cssText = `background:${color}; left:${left}%; animation-delay:${animDelay}s;`;
+    s.append(b);
+  }
+
+  // Play background music
+  if(!window.bdayMusic){
+    window.bdayMusic = new Audio('bday-music.mp3');
+    window.bdayMusic.loop = true;
+    window.bdayMusic.volume = 0.5;
+  }
+  window.bdayMusic.play().catch(e=>console.log("Audio play failed:", e));
+
   s.append(l1,cam,l2,dog,nextBlob('items'));
   return s;
 };
@@ -1059,7 +1109,8 @@ SCENES.memories = () => {
                          : `<img id="mem-img-front-${i}" class="photo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="background:linear-gradient(135deg,#C6B8EC,#F3C3D1);">`;
     
     // For the back, we use a different placeholder or gradient to distinguish it.
-    const backImg = `<img id="mem-img-back-${i}" class="photo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="background:linear-gradient(135deg,#A3D5D6,#D4C3ED);">`;
+    const backImg = p.backSrc ? `<img id="mem-img-back-${i}" class="photo" src="${p.backSrc}" alt="${esc(p.backCap||'')}">`
+                              : `<img id="mem-img-back-${i}" class="photo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="background:linear-gradient(135deg,#A3D5D6,#D4C3ED);">`;
 
     flipper.innerHTML = `
       <div class="polaroid polaroid-front">
@@ -1068,7 +1119,7 @@ SCENES.memories = () => {
       </div>
       <div class="polaroid polaroid-back">
         ${backImg}
-        <span id="mem-cap-back-${i}" class="cap">current</span>
+        <span id="mem-cap-back-${i}" class="cap">${esc(p.backCap||'current')}</span>
       </div>
     `;
 
